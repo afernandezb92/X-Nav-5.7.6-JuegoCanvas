@@ -34,12 +34,24 @@ princessImage.onload = function () {
 };
 princessImage.src = "images/princess.png";
 
+// Stone image
+var stoneReady = false;
+var stoneImage = new Image();
+stoneImage.onload = function () {
+	stoneReady = true;
+};
+stoneImage.src = "images/stone.png";
+
 // Game objects
 var hero = {
 	speed: 256 // movement in pixels per second
 };
 var princess = {};
 var princessesCaught = 0;
+var numStones = 0;
+var stones = new Array(20);
+var firstStone = true;
+
 
 // Handle keyboard controls
 var keysDown = {};
@@ -56,24 +68,58 @@ addEventListener("keyup", function (e) {
 var reset = function () {
 	hero.x = canvas.width / 2;
 	hero.y = canvas.height / 2;
-
+	
 	// Throw the princess somewhere on the screen randomly
-	princess.x = 32 + (Math.random() * (canvas.width - 64));
-	princess.y = 32 + (Math.random() * (canvas.height - 64));
+	princess.x = 32 + (Math.random() * (canvas.width - 90));
+	princess.y = 32 + (Math.random() * (canvas.height - 98));
+	
+	numStones = princessesCaught;
+	if(princessesCaught > 8){
+		numStones = 8;
+	}
+	for(i = 0; i < numStones; i++){
+		stone = {};
+		stones[i] = stone;
+		if(firstStone){
+			firstStone = false;
+			do{
+				stones[i].x = 32 + (Math.random() * (canvas.width - 90));
+				stones[i].y = 32 + (Math.random() * (canvas.height - 98));
+				console.log("Primera piedra");
+			}while(isEqual(stones[i], princess));	
+		}
+		else{
+			do{
+				stones[i].x = 32 + (Math.random() * (canvas.width - 90));
+				stones[i].y = 32 + (Math.random() * (canvas.height - 98));
+				console.log("Mas piedras");
+			}while(isEqual(stones[i], stones[i-1]));
+		}
+	}	
+		
+};
+
+var isEqual = function(elem1, elem2){
+	if(elem1.x <(elem2.x + 30) && elem2.x < (elem1.x +30) && elem1.y < (elem2.y + 30) && elem2.y < (elem1.y +30)){
+		return true;
+	}	
+	else{
+		return false;
+	}	
 };
 
 // Update game objects
 var update = function (modifier) {
-	if (38 in keysDown) { // Player holding up
+	if (38 in keysDown && hero.y > 30) { // Player holding up
 		hero.y -= hero.speed * modifier;
 	}
-	if (40 in keysDown) { // Player holding down
+	if (40 in keysDown && hero.y < canvas.height - 70) { // Player holding down
 		hero.y += hero.speed * modifier;
 	}
-	if (37 in keysDown) { // Player holding left
+	if (37 in keysDown && hero.x > 30) { // Player holding left
 		hero.x -= hero.speed * modifier;
 	}
-	if (39 in keysDown) { // Player holding right
+	if (39 in keysDown && hero.x < canvas.width - 70) { // Player holding right
 		hero.x += hero.speed * modifier;
 	}
 
@@ -101,6 +147,11 @@ var render = function () {
 
 	if (princessReady) {
 		ctx.drawImage(princessImage, princess.x, princess.y);
+	}
+	if (stoneReady) {
+		for(i = 0; i < numStones; i++){
+			ctx.drawImage(stoneImage, stones[i].x, stones[i].y);
+		}
 	}
 
 	// Score
